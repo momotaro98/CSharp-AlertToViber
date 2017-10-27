@@ -1,3 +1,7 @@
+#r "Newtonsoft.Json"
+
+using Newtonsoft.Json;
+
 public class Api
 {
     private string _authToken;
