@@ -1,4 +1,4 @@
-#load "..\ViberLib\ViberApi.csx"
+#load "..\ViberApiLib\Api.csx"
 
 using System.Net;
 
@@ -18,7 +18,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     name = name ?? data?.name;
 
     // Use ViberApi
-    ViberApi viber = new ViberApi("authAuth", "VIVIBER_TARO", "https://yamada.com.com");
+    Api viber = new Api("authAuth", "VIVIBER_TARO", "https://yamada.com.com");
     name = viber.GetName();
 
     return name == null

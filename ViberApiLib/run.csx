@@ -1,5 +1,3 @@
-#load "..\ViberApiLib\Api.csx"
-
 using System.Net;
 
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
@@ -16,10 +14,6 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 
     // Set name to query string or body data
     name = name ?? data?.name;
-
-    // Use ViberApi
-    Api viber = new Api("authAuth", "VIVIBER_TARO", "https://yamada.com.com");
-    name = viber.GetName();
 
     return name == null
         ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
