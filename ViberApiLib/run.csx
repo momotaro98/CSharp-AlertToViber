@@ -18,9 +18,12 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     name = name ?? data?.name;
 
     // Test ViberApi
-    Api viber = new Api("authAuth", "VIVIBER_TARO", "https://yamada.com.com");
+    Api viber = new Api("abcdefxxxxx", "VIVIBER_TARO", ""); // TODO : Replace
     name = viber.GetName();
-    if (name != "VIVIBER_TARO") log.Error("Test Api.GetName failed"); // TODO: Mabe test method better
+    if (name != "VIVIBER_TARO") log.Error("Test Api.GetName failed"); // TODO: Make test method better
+
+    var result = viber.SendMessages(userId: "nie7s9b4vcXqc/yfbyJyGw==", text: "TEST VIBER!!!"); // TODO: Replace
+    log.Info(result.ToString());
 
     return name == null
         ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
