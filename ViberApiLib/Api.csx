@@ -64,11 +64,10 @@ public class Api
     public string PostRequest(string endPoint, string payload)
     {
         HttpClient client = new HttpClient();
-        client.BaseAddress = new Uri(Constants.VIBER_BOT_API_URL);
-        StringContent content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");            
+        StringContent content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
         // post data
-        HttpResponseMessage response = client.PostAsync("/" + endPoint, content).Result;
-        string resultContent = response.Content.ReadAsStringAsync().Result;
-        return resultContent;
+        HttpResponseMessage response = client.PostAsync(Constants.VIBER_BOT_API_URL + "/" + endPoint, content).Result;
+        // TODO : Handle request errors
+        return response.Content.ReadAsStringAsync().Result;
     }
 }
