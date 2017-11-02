@@ -18,7 +18,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     name = name ?? data?.name;
 
     // Use ViberApi
-    Api viber = new Api("authAuth", "VIVIBER_TARO", "https://yamada.com.com");
+    Api viber = new Api(System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN"), "momotaroBot", "");
     name = viber.GetName();
 
     return name == null

@@ -18,11 +18,11 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     name = name ?? data?.name;
 
     // Test ViberApi
-    Api viber = new Api("abcdefxxxxx", "momotaroBot", ""); // TODO : Use Env variable
+    Api viber = new Api(System.Environment.GetEnvironmentVariable("TEST_VIBER_AUTH_TOKEN"), "momotaroBot", "");
     name = viber.GetName();  // TODO : Remove GetName method
     if (name != "momotaroBot") log.Error("Test Api.GetName failed"); // TODO: Make better
 
-    var result = viber.SendMessages(userId: "nie7s9b4vcXqc/yfbyJyGw==", text: "TEST VIBER!!!"); // TODO: Replace
+    var result = viber.SendMessages(userId: "nie7s9b4vcXqc/yfbyJyGw==", text: "Test Api.SendMessages method"); // TODO: Replace
     log.Info(result);
 
     return name == null
