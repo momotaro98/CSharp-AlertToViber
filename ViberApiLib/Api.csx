@@ -43,6 +43,27 @@ public class Api
         return PostRequest(Constants.SEND_MESSAGE, paylaod);
     }
 
+    public string SetWebhook(string url, List<string> event_types = null)
+    {
+        var dictPayload = new Dictionary<string, object>()
+        {
+            { "auth_token", AuthToken},
+            { "url", url},
+        };
+        if (event_types != null && event_types.Count > 0)
+        {
+            dictPayload.Add("event_types", event_types);
+        }
+        string paylaod = JsonConvert.SerializeObject(dictPayload);
+        var result = PostRequest(Constants.SET_WEBHOOK, paylaod);
+        var values = JsonConvert.DeserializeObject<Dictionary<string, object>>(result);
+        if (values["status"].ToString() != "0")
+        {
+            return string.Format("Failed with status: {0}, massage: {1}", values["status"], values["status_message"]);
+        }
+        return values["event_types"].ToString();
+    }
+
     private Dictionary<string, object> prepareSendMessagesPayload(string message, string receiver, string senderName, string senderAvatar, string trackingData)
     {
         return new Dictionary<string, object>()
