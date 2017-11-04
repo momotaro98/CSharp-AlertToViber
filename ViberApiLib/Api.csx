@@ -2,6 +2,8 @@
 
 #r "Newtonsoft.Json"
 
+using System.Security.Cryptography;
+using System.Text;
 using Newtonsoft.Json;
 
 public class Api
@@ -64,6 +66,11 @@ public class Api
         return values["event_types"].ToString();
     }
 
+    public bool VerifySignature(string requestData, string signature)
+    {
+        return signature == calculateMessageSignature(requestData);
+    }
+
     private Dictionary<string, object> prepareSendMessagesPayload(string message, string receiver, string senderName, string senderAvatar, string trackingData)
     {
         return new Dictionary<string, object>()
@@ -90,5 +97,14 @@ public class Api
         HttpResponseMessage response = client.PostAsync(Constants.VIBER_BOT_API_URL + "/" + endPoint, content).Result;
         // TODO : Handle request errors
         return response.Content.ReadAsStringAsync().Result;
+    }
+
+    private string calculateMessageSignature(string message)
+    {
+        byte[] keyByte = new ASCIIEncoding().GetBytes(AuthToken);
+        byte[] messageBytes = new ASCIIEncoding().GetBytes(message);
+
+        byte[] hashmessage = new HMACSHA256(keyByte).ComputeHash(messageBytes);
+        return string.Concat(Array.ConvertAll(hashmessage, x => x.ToString("x2")));
     }
 }
