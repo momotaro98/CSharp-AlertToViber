@@ -1,4 +1,5 @@
 #load ".\Api.csx"
+#load ".\Request.csx"
 
 using System.Net;
 
@@ -44,6 +45,25 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     log.Info(viberRequest.EventType);
     log.Info(viberRequest.TimeStamp);
 
+    if (viberRequest is SubscribedRequest)
+    {
+        log.Info("Subscribed Request");
+        log.Info(viberRequest.User.Id);
+        log.Info(viberRequest.User.Name);
+        log.Info(viberRequest.User.Avatar);
+        log.Info(viberRequest.User.Country);
+        log.Info(viberRequest.User.Language);
+        log.Info(viberRequest.User.ApiVersion);
+    }
+    else if (viberRequest is UnsubscribedRequest)
+    {
+        log.Info("Unsubscribed Request");
+    }
+    else if (viberRequest is MessageRequest)
+    {
+        log.Info("Message Request");
+    }
+    
     return name == null
         ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
         : req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
