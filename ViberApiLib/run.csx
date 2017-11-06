@@ -38,7 +38,12 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     bool ok = viber.VerifySignature(data.ToString(), signature.ToString());
     if (!ok) log.Info("Error! Not Verified");
     */
-    
+
+    // Test ParseRequest
+    var viberRequest = viber.ParseRequest(data.ToString());
+    log.Info(viberRequest.EventType);
+    log.Info(viberRequest.TimeStamp);
+
     return name == null
         ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
         : req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
