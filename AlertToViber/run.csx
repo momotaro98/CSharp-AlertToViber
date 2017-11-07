@@ -6,22 +6,20 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 {
     log.Info("C# HTTP trigger function processed a request.");
 
-    // parse query parameter
-    string name = req.GetQueryNameValuePairs()
-        .FirstOrDefault(q => string.Compare(q.Key, "name", true) == 0)
-        .Value;
-
     // Get request body
     dynamic data = await req.Content.ReadAsAsync<object>();
-
-    // Set name to query string or body data
-    name = name ?? data?.name;
+    // Log Webhook data
+    log.Info(data?.ToString());
+    // Get result element from Splunk
+    string result = data?.result.ToString();
 
     // Use ViberApi
     Api viber = new Api(System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN"), "momotaroBot", "");
-    name = viber.GetName();
 
-    return name == null
-        ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
-        : req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
+    var result_SendMessages = viber.SendMessages(userId: "nie7s9b4vcXqc/yfbyJyGw==", text: "Alert occurred\n" + result.ToString());
+    log.Info(result_SendMessages);
+
+    return result == null
+        ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a result on the query string or in the request body")
+        : req.CreateResponse(HttpStatusCode.OK, "result: \n" + result.ToString());
 }
