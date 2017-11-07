@@ -53,7 +53,7 @@ public class RequstFactory
 public class Request
 {
     private string _eventType;
-    public string EventType
+    public string Event
     { 
         get { return _eventType; }
     }
@@ -85,15 +85,27 @@ public class SubscribedRequest : Request
 
 public class UnsubscribedRequest : Request
 {
+    private string _user_id;
+    public string UserId
+    {
+        get { return _user_id; }
+    }
+
     public UnsubscribedRequest(Dictionary<string, object> requestDict) : base(requestDict)
     {
+        _user_id = requestDict["user_id"].ToString();
     }
 }
 
 public class MessageRequest : Request
 {
+    public UserProfile User { get; set; }
+
     public MessageRequest(Dictionary<string, object> requestDict) : base(requestDict)
     {
+        string userStr = requestDict["sender"].ToString();
+        var userDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(userStr);
+        User = new UserProfile(userDict);
     }
 }
 

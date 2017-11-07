@@ -42,12 +42,29 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 
     // Test ParseRequest
     var viberRequest = viber.ParseRequest(data.ToString());
-    log.Info(viberRequest.EventType);
+    log.Info(viberRequest.Event);
     log.Info(viberRequest.TimeStamp);
 
     if (viberRequest is SubscribedRequest)
     {
+        /* TestCase of Subscribed callback data from public site
+        {
+            "event":"subscribed",
+            "timestamp":1457764197627,
+            "user":{
+                "id":"01234567890A=",
+                "name":"John McClane",
+                "avatar":"http://avatar.example.com",
+                "country":"UK",
+                "language":"en",
+                "api_version":1
+            },
+            "message_token":4912661846655238145
+        }
+        */
         log.Info("Subscribed Request");
+        log.Info(viberRequest.Event);
+        log.Info(viberRequest.TimeStamp);
         log.Info(viberRequest.User.Id);
         log.Info(viberRequest.User.Name);
         log.Info(viberRequest.User.Avatar);
@@ -57,11 +74,56 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     }
     else if (viberRequest is UnsubscribedRequest)
     {
+        /* TestCase of Unsubscribed callback data from public site
+        {
+            "event":"unsubscribed",
+            "timestamp":1457764197627,
+            "user_id":"01234567890A=",
+            "message_token":4912661846655238145
+        }
+        */
         log.Info("Unsubscribed Request");
+        log.Info(viberRequest.Event);
+        log.Info(viberRequest.TimeStamp);
+        log.Info(viberRequest.UserId);
     }
     else if (viberRequest is MessageRequest)
     {
+        /* TestCase of MessageRequest callback data from public site
+        {
+            "event":"message",
+            "timestamp":1457764197627,
+            "message_token":4912661846655238145,
+            "sender":{
+                "id":"01234567890A=",
+                "name":"John McClane",
+                "avatar":"http://avatar.example.com",
+                "country":"UK",
+                "language":"en",
+                "api_version":1
+            },
+            "message":{
+                "type":"text",
+                "text":"a message to the service",
+                "media":"http://example.com",
+                "location":{
+                    "lat":50.76891,
+                    "lon":6.11499
+                },
+                "tracking_data":"tracking data"
+            }
+        }
+        */
         log.Info("Message Request");
+        log.Info("Subscribed Request");
+        log.Info(viberRequest.Event);
+        log.Info(viberRequest.TimeStamp);
+        log.Info(viberRequest.User.Id);
+        log.Info(viberRequest.User.Name);
+        log.Info(viberRequest.User.Avatar);
+        log.Info(viberRequest.User.Country);
+        log.Info(viberRequest.User.Language);
+        log.Info(viberRequest.User.ApiVersion);
     }
     
     return name == null
