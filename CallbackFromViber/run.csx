@@ -6,9 +6,15 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 {
     log.Info("C# HTTP trigger function processed a request.");
 
+    // Get request headers
+    if (!req.Headers.Contains("X-Viber-Content-Signature"))
+    {
+        return req.CreateResponse(HttpStatusCode.BadRequest, "Incorrect request");
+    }
+
     // parse query parameter
     string name = req.GetQueryNameValuePairs()
-        .FirstOrDefault(q => string.Compare(q.Key, "name", true) == 0)
+        .FirstOrDefault(q => string.Compare(q.Key, "event", true) == 0)
         .Value;
 
     // Get request body
