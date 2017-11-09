@@ -115,15 +115,20 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         }
         */
         log.Info("Message Request");
-        log.Info("Subscribed Request");
+
         log.Info(viberRequest.Event);
         log.Info(viberRequest.TimeStamp);
+
         log.Info(viberRequest.User.Id);
         log.Info(viberRequest.User.Name);
         log.Info(viberRequest.User.Avatar);
         log.Info(viberRequest.User.Country);
         log.Info(viberRequest.User.Language);
         log.Info(viberRequest.User.ApiVersion);
+
+        log.Info(viberRequest.Message.Type);
+        log.Info(viberRequest.Message.TrackingData);
+        log.Info(viberRequest.Message.Text);
     }
     
     return name == null

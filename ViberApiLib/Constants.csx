@@ -17,4 +17,15 @@ static class Constants
 	public const string EVENT_UNSUBSCRIBED = "unsubscribed";
 	public const string EVENT_FAILED = "failed";
 	public const string EVENT_WEBHOOK = "webhook";
+
+	public const string RICH_MEDIA = "rich_media";
+	public const string STICKER = "sticker";
+	public const string URL = "url";
+	public const string LOCATION = "location";
+	public const string CONTACT = "contact";
+	public const string FILE = "file";
+	public const string TEXT = "text";
+	public const string PICTURE = "picture";
+	public const string VIDEO = "video";
+	public const string KEYBOARD = "keyboard";
 }

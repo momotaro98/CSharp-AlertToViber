@@ -1,5 +1,6 @@
 #load ".\Constants.csx"
 #load ".\UserProfile.csx"
+#load ".\Message.csx"
 
 #r "Newtonsoft.Json"
 
@@ -101,11 +102,16 @@ public class UnsubscribedRequest : Request
 public class MessageRequest : Request
 {
     public UserProfile User { get; set; }
+    public Message Message { get; set; }
 
     public MessageRequest(Dictionary<string, object> requestDict) : base(requestDict)
     {
         string userStr = requestDict["sender"].ToString();
         var userDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(userStr);
         User = new UserProfile(userDict);
+
+        string messageStr = requestDict["message"].ToString();
+        MessageFactory messageFactory = new MessageFactory();
+        Message = messageFactory.Create(messageStr);
     }
 }
