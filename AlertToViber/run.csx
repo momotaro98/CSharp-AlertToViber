@@ -1,8 +1,11 @@
 #load "..\ViberApiLib\Api.csx"
 
-using System.Net;
+#r "Microsoft.WindowsAzure.Storage"
 
-public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
+using System.Net;
+using Microsoft.WindowsAzure.Storage.Table;
+
+public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQueryable<BotUser> tableBinding, TraceWriter log)
 {
     log.Info("C# HTTP trigger function processed a request.");
 
@@ -16,10 +19,22 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     // Use ViberApi
     Api viber = new Api(System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN"), "momotaroBot", "");
 
-    var result_SendMessages = viber.SendMessages(userId: "nie7s9b4vcXqc/yfbyJyGw==", text: "Alert occurred\n" + result.ToString());
-    log.Info(result_SendMessages);
+    // Send Alert to Subscribers
+    string viberAlertBotName = System.Environment.GetEnvironmentVariable("BOTUSER_TABLE_PARTITIONKEY_VALUE");
+    foreach (BotUser user in tableBinding.Where(u => u.PartitionKey == viberAlertBotName).ToList())
+    {
+        log.Info($"Send to {user.UserName}, UserId: {user.UserId}");
+        var result_SendMessages = viber.SendMessages(userId: user.UserId, text: "Alert occurred\n" + result.ToString());
+        log.Info(result_SendMessages);
+    }
 
     return result == null
         ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a result on the query string or in the request body")
         : req.CreateResponse(HttpStatusCode.OK, "result: \n" + result.ToString());
+}
+
+public class BotUser : TableEntity
+{
+    public string UserId { get; set; }
+    public string UserName { get; set; }
 }
