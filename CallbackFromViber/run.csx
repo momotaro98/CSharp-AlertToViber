@@ -2,13 +2,14 @@
 
 using System.Net;
 
-public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, ICollector<BotUser> tableBinding, TraceWriter log)
+public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, ICollector<BotUser> tableBinding, ICollector<string> outputQueueItem, TraceWriter log)
 {
     log.Info("C# HTTP trigger function processed a request.");
 
     // Get request headers
     if (!req.Headers.Contains("X-Viber-Content-Signature"))
     {
+        log.Info("Got an incorrect request, which doesn't have X-Viber-Content-Signature header");
         return req.CreateResponse(HttpStatusCode.BadRequest, "Incorrect request");
     }
 
@@ -47,6 +48,16 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IColle
                 UserId = userId,
                 UserName = userName }
             );
+    }
+    else if (viberRequest is UnsubscribedRequest)
+    {
+        log.Info("Unsubscribed Request");
+        log.Info(viberRequest.TimeStamp);
+        var userId = viberRequest.UserId;
+        log.Info($"Deleting BotUser Entity , UserId: {userId}");
+
+        // Add UserId to queue to kick DeleteBotUserEntity app
+        outputQueueItem.Add(userId);
     }
 
     return viberRequest == null
