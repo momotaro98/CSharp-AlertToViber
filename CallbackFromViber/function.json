@@ -17,6 +17,13 @@
       "tableName": "BotUser",
       "connection": "AzureWebJobsDashboard",
       "direction": "out"
+    },
+    {
+      "type": "queue",
+      "name": "outputQueueItem",
+      "queueName": "unsubscribing-user",
+      "connection": "AzureWebJobsDashboard",
+      "direction": "out"
     }
   ],
   "disabled": false
