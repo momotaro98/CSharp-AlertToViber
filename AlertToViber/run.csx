@@ -1,27 +1,40 @@
 #load "..\ViberApiLib\Api.csx"
 
-using System.Net;
+#r "Microsoft.WindowsAzure.Storage"
 
-public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
+using System.Net;
+using Microsoft.WindowsAzure.Storage.Table;
+
+public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQueryable<BotUser> tableBinding, TraceWriter log)
 {
     log.Info("C# HTTP trigger function processed a request.");
 
-    // parse query parameter
-    string name = req.GetQueryNameValuePairs()
-        .FirstOrDefault(q => string.Compare(q.Key, "name", true) == 0)
-        .Value;
-
     // Get request body
     dynamic data = await req.Content.ReadAsAsync<object>();
-
-    // Set name to query string or body data
-    name = name ?? data?.name;
+    // Log Webhook data
+    log.Info(data?.ToString());
+    // Get result element from Splunk
+    string result = data?.result.ToString();
 
     // Use ViberApi
     Api viber = new Api(System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN"), "momotaroBot", "");
-    name = viber.GetName();
 
-    return name == null
-        ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
-        : req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
+    // Send Alert to Subscribers
+    string viberAlertBotName = System.Environment.GetEnvironmentVariable("BOTUSER_TABLE_PARTITIONKEY_VALUE");
+    foreach (BotUser user in tableBinding.Where(u => u.PartitionKey == viberAlertBotName).ToList())
+    {
+        log.Info($"Send to {user.UserName}, UserId: {user.UserId}");
+        var result_SendMessages = viber.SendMessages(userId: user.UserId, text: "Alert occurred\n" + result.ToString());
+        log.Info(result_SendMessages);
+    }
+
+    return result == null
+        ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a result on the query string or in the request body")
+        : req.CreateResponse(HttpStatusCode.OK, "result: \n" + result.ToString());
+}
+
+public class BotUser : TableEntity
+{
+    public string UserId { get; set; }
+    public string UserName { get; set; }
 }

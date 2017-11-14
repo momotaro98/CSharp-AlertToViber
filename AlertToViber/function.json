@@ -10,6 +10,13 @@
       "name": "$return",
       "type": "http",
       "direction": "out"
+    },
+    {
+      "type": "table",
+      "name": "tableBinding",
+      "tableName": "BotUser",
+      "connection": "AzureWebJobsDashboard",
+      "direction": "in"
     }
   ],
   "disabled": false

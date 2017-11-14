@@ -10,6 +10,20 @@
       "name": "$return",
       "type": "http",
       "direction": "out"
+    },
+    {
+      "type": "table",
+      "name": "tableBinding",
+      "tableName": "BotUser",
+      "connection": "AzureWebJobsDashboard",
+      "direction": "out"
+    },
+    {
+      "type": "queue",
+      "name": "outputQueueItem",
+      "queueName": "unsubscribing-user",
+      "connection": "AzureWebJobsDashboard",
+      "direction": "out"
     }
   ],
   "disabled": false

@@ -1,0 +1,26 @@
+{
+  "bindings": [
+    {
+      "name": "triggerQueue",
+      "type": "queueTrigger",
+      "direction": "in",
+      "queueName": "unsubscribing-user",
+      "connection": "AzureWebJobsDashboard"
+    },
+    {
+      "type": "table",
+      "name": "outputTable",
+      "tableName": "BotUser",
+      "connection": "AzureWebJobsDashboard",
+      "direction": "out"
+    },
+    {
+      "type": "table",
+      "name": "inputTable",
+      "tableName": "BotUser",
+      "connection": "AzureWebJobsDashboard",
+      "direction": "in"
+    }
+  ],
+  "disabled": false
+}
