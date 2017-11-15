@@ -38,11 +38,13 @@ public class UserProfile
 
     public UserProfile(Dictionary<string, object> dict)
     {
-        _name = dict["name"].ToString();
-        _avatar = dict["avatar"].ToString();
         _id = dict["id"].ToString();
-        _country = dict["country"].ToString();
-        _language = dict["language"].ToString();
         _api_version = dict["api_version"].ToString();
+
+        // There is a case that the following keys are not contained in payload of Viber API.
+        _name = dict.ContainsKey("name") ? dict["name"].ToString() : "Nameless User";
+        _avatar = dict.ContainsKey("avatar") ? dict["avatar"].ToString() : string.Empty;
+        _country = dict.ContainsKey("country") ? dict["country"].ToString() : string.Empty;
+        _language = dict.ContainsKey("language") ? dict["language"].ToString() : string.Empty;
     }
 }
