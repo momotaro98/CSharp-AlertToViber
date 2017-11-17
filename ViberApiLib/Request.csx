@@ -34,7 +34,7 @@ public class RequstFactory
 
         if (!EventTypeList.Contains(eventType))
         {
-            throw new Exception("Unknown event type is contained in \"event\" key.");
+            throw new Exception("\"event\" key's value, " + eventType.ToString() + " is unknown.");
         }
 
         switch(eventType)

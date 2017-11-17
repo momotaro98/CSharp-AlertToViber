@@ -134,18 +134,94 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         }
         else if (viberRequest is SeenRequest)
         {
+            /* TestCase of SeenRequest callback data from public site
+            {
+                "event":"seen",
+                "timestamp":1457764197627,
+                "message_token":4912661846655238145,
+                "user_id":"01234567890A="
+            }
+            */
+            log.Info("Seen Request");
+            log.Info(viberRequest.Event);
+            log.Info(viberRequest.TimeStamp);
+            log.Info(viberRequest.UserId);
         }
         else if (viberRequest is ConversationStartedRequest)
         {
+            /* TestCase of ConversationStartedRequest callback data from public site
+            {
+                "event":"conversation_started",
+                "timestamp":1457764197627,
+                "message_token":4912661846655238145,
+                "type":"open",
+                "context":"context information",
+                "user":{
+                    "id":"01234567890A=",
+                    "name":"John McClane",
+                    "avatar":"http://avatar.example.com",
+                    "country":"UK",
+                    "language":"en",
+                    "api_version":1
+                },
+                "subscribed":false
+            }
+            */
+            log.Info("ConversationStarted Request");
+
+            log.Info(viberRequest.Event);
+            log.Info(viberRequest.TimeStamp);
+
+            log.Info(viberRequest.User.Id);
+            log.Info(viberRequest.User.Name);
+            log.Info(viberRequest.User.Avatar);
+            log.Info(viberRequest.User.Country);
+            log.Info(viberRequest.User.Language);
+            log.Info(viberRequest.User.ApiVersion);
         }
         else if (viberRequest is DeliveredRequest)
         {
+            /* TestCase of DeliveredRequest callback data from public site
+            {
+                "event":"delivered",
+                "timestamp":1457764197627,
+                "message_token":4912661846655238145,
+                "user_id":"01234567890A="
+            }
+            */
+            log.Info("Delivered Request");
+            log.Info(viberRequest.Event);
+            log.Info(viberRequest.TimeStamp);
+            log.Info(viberRequest.UserId);
         }
         else if (viberRequest is FailedRequest)
         {
+            /* TestCase of FailedRequest callback data from public site
+            {
+                "event":"failed",
+                "timestamp":1457764197627,
+                "message_token":4912661846655238145,
+                "user_id":"01234567890A=",
+                "desc":"failure description"
+            }
+            */
+            log.Info("Failed Request");
+            log.Info(viberRequest.Event);
+            log.Info(viberRequest.TimeStamp);
+            log.Info(viberRequest.UserId);
         }
         else if (viberRequest is WebhookRequest)
         {
+            /* TestCase of WebhookRequest callback data from public site
+            {
+                "event":"webhook",
+                "timestamp":1457764197627,
+                "message_token":"241256543215"
+            }
+            */
+            log.Info("Webhook Request");
+            log.Info(viberRequest.Event);
+            log.Info(viberRequest.TimeStamp);
         }
     }
     catch (KeyNotFoundException e)
