@@ -27,14 +27,14 @@ public class RequstFactory
 
         if (!values.ContainsKey("event"))
         {
-            throw new KeyNotFoundException("Necessary key, \"event\" is not in the request payload.");
+            throw new KeyNotFoundException("Necessary key of Viber request, \"event\" is not in the request payload.");
         }
 
         var eventType = values["event"];
 
         if (!EventTypeList.Contains(eventType))
         {
-            throw new Exception("\"event\" key's value, " + eventType.ToString() + " is unknown.");
+            throw new Exception("\"event\" key's value of the Viber request, " + eventType.ToString() + " is unknown.");
         }
 
         switch(eventType)
