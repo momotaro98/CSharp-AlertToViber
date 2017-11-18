@@ -27,14 +27,14 @@ public class RequstFactory
 
         if (!values.ContainsKey("event"))
         {
-            return null; // TODO : make good
+            throw new KeyNotFoundException("Necessary key of Viber request, \"event\" is not in the request payload.");
         }
 
         var eventType = values["event"];
 
         if (!EventTypeList.Contains(eventType))
         {
-            return null; // TODO : raise error
+            throw new Exception("\"event\" key's value of the Viber request, " + eventType.ToString() + " is unknown.");
         }
 
         switch(eventType)
@@ -45,10 +45,20 @@ public class RequstFactory
                 return new UnsubscribedRequest(values);
             case Constants.EVENT_MESSAGE:
                 return new MessageRequest(values);
-            default: // TODO : increase types
+            case Constants.EVENT_SEEN:
+                return new SeenRequest(values);
+            case Constants.EVENT_CONVERSATION_STARTED:
+                return new ConversationStartedRequest(values);
+            case Constants.EVENT_DELIVERED:
+                return new DeliveredRequest(values);
+            case Constants.EVENT_FAILED:
+                return new FailedRequest(values);
+            case Constants.EVENT_WEBHOOK:
+                return new WebhookRequest(values);
+            default:
                 break;
         }
-        return null; // TODO: make good
+        return null;  // never reach
     }
 }
 
@@ -113,5 +123,66 @@ public class MessageRequest : Request
         string messageStr = requestDict["message"].ToString();
         MessageFactory messageFactory = new MessageFactory();
         Message = messageFactory.Create(messageStr);
+    }
+}
+
+public class SeenRequest : Request
+{
+    private string _user_id;
+    public string UserId
+    {
+        get { return _user_id; }
+    }
+
+    public SeenRequest(Dictionary<string, object> requestDict) : base(requestDict)
+    {
+        _user_id = requestDict["user_id"].ToString();
+    }
+}
+
+public class ConversationStartedRequest : Request
+{
+    public UserProfile User { get; set; }
+
+    public ConversationStartedRequest(Dictionary<string, object> requestDict) : base(requestDict)
+    {
+        string userStr = requestDict["user"].ToString();
+        var userDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(userStr);
+        User = new UserProfile(userDict);
+    }
+}
+
+public class DeliveredRequest : Request
+{
+    private string _user_id;
+    public string UserId
+    {
+        get { return _user_id; }
+    }
+
+    public DeliveredRequest(Dictionary<string, object> requestDict) : base(requestDict)
+    {
+        _user_id = requestDict["user_id"].ToString();
+    }
+}
+
+public class FailedRequest : Request
+{
+    private string _user_id;
+    public string UserId
+    {
+        get { return _user_id; }
+    }
+
+    public FailedRequest(Dictionary<string, object> requestDict) : base(requestDict)
+    {
+        _user_id = requestDict["user_id"].ToString();
+    }
+}
+
+public class WebhookRequest : Request
+{
+    public WebhookRequest(Dictionary<string, object> requestDict) : base(requestDict)
+    {
     }
 }
