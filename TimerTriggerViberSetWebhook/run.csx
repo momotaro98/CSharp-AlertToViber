@@ -8,9 +8,10 @@ public static void Run(TimerInfo myTimer, TraceWriter log)
 
     // Use ViberApi
     Api viber = new Api(System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN"), "momotaroBot", "");
-    var name = viber.GetName();
-    log.Info(name);
 
+    log.Info($"Setting Viber webhook of {viber.BotName} Bot");
+    // Set Webhook
     var event_type = viber.SetWebhook(System.Environment.GetEnvironmentVariable("API_CALLBACK_FROM_VIBER"));
-    log.Info(event_type);
+    log.Info($"SetWebhook response from Viber: {event_type}");
+    log.Info($"Set Viber webhook of {viber.BotName} Bot");
 }
