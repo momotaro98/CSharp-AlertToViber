@@ -34,11 +34,6 @@ public class Api
         _avatarPath = avatarPath;
     }
 
-    public string GetName()
-    {
-        return BotName;
-    }
-
     public string SendMessages(string userId, string text, string trackingData = "")
     {
         var dictPayload = prepareSendMessagesPayload(message: text, receiver: userId, senderName: BotName, senderAvatar: AvatarPath, trackingData: trackingData);
@@ -100,9 +95,8 @@ public class Api
     {
         HttpClient client = new HttpClient();
         StringContent content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
-        // post data
+        // post data to Viber API
         HttpResponseMessage response = client.PostAsync(Constants.VIBER_BOT_API_URL + "/" + endPoint, content).Result;
-        // TODO : Handle request errors
         return response.Content.ReadAsStringAsync().Result;
     }
 

@@ -7,22 +7,12 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 {
     log.Info("C# HTTP trigger function processed a request.");
 
-    // parse query parameter
-    string name = req.GetQueryNameValuePairs()
-        .FirstOrDefault(q => string.Compare(q.Key, "name", true) == 0)
-        .Value;
-
     // Get request body
     dynamic data = await req.Content.ReadAsAsync<object>();
     log.Info(data?.GetType().ToString());
 
-    // Set name to query string or body data
-    name = name ?? data?.name;
-
     // Test ViberApi
     Api viber = new Api(System.Environment.GetEnvironmentVariable("TEST_VIBER_AUTH_TOKEN"), "momotaroBot", "");
-    name = viber.GetName();  // TODO : Remove GetName method
-    if (name != "momotaroBot") log.Error("Test Api.GetName failed"); // TODO: Make better
 
     // Test SendMessages
     var result = viber.SendMessages(userId: "nie7s9b4vcXqc/yfbyJyGw==", text: "Test Api.SendMessages method"); // TODO: Replace
@@ -235,7 +225,5 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a correct payload in the request body");
     }
     
-    return name == null
-        ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
-        : req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
+    return req.CreateResponse(HttpStatusCode.OK, "Hello Viber API");
 }
