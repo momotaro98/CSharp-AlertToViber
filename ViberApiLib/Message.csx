@@ -25,24 +25,24 @@ public class MessageFactory
 
         if (!values.ContainsKey("type"))
         {
-            return null; // TODO : make good
+            throw new KeyNotFoundException("Necessary key of Viber message, \"type\" is not in the request payload.");
         }
 
         var type = values["type"];
 
         if (!MessageTypeList.Contains(type))
         {
-            return null; // TODO : raise error
+            throw new Exception("\"type\" key's value of the Viber message, " + type.ToString() + " is unknown.");
         }
 
         switch(type)
         {
             case Constants.TEXT:
                 return new TextMessage(values);
-            default: // TODO : increase types
+            default: // TODO : Add more message types of Viber
                 break;
         }
-        return null; // TODO: make good
+        return null; // never reach
     }
 }
 
@@ -81,4 +81,4 @@ public class TextMessage : Message
     }
 }
 
-// TODO : Add more classes
+// TODO : Add more message types of Viber
