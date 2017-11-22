@@ -20,7 +20,13 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
     // Get request body
     dynamic data = await req.Content.ReadAsAsync<object>();
     // Log Webhook data
+    log.Info("Request body");
     log.Info(data?.ToString());
+
+    // Get Splunk data
+    // http://docs.splunk.com/Documentation/Splunk/6.6.3/Alert/Configuringscriptedalerts#Access_arguments_to_scripts_that_are_run_as_an_alert_action
+    var nameOfReport = data?.SPLUNK_ARG_4.ToString();
+    log.Info($"name_of_report: {nameOfReport}");
     
     // Get result element from Splunk
     // string result = data?.result.ToString(); // Result from Webhook of Splunk
