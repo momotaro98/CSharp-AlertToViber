@@ -9,12 +9,22 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
 {
     log.Info("C# HTTP trigger function processed a request.");
 
+    // Validate that reqeust is from script on Splunk
+    // [Caution] If we can use Webhook from Splunk, this validation should be removed.
+    if (!req.Headers.Contains("X-Script-On-Splunk"))
+    {
+        log.Info("Got an incorrect request, which doesn't have X-Script-On-Splunk header");
+        return req.CreateResponse(HttpStatusCode.BadRequest, "Incorrect request");
+    }
+
     // Get request body
     dynamic data = await req.Content.ReadAsAsync<object>();
     // Log Webhook data
     log.Info(data?.ToString());
+    
     // Get result element from Splunk
-    string result = data?.result.ToString();
+    // string result = data?.result.ToString(); // Result from Webhook of Splunk
+    string result = data?.ToString(); // Resulf from Script on Splunk
 
     // Use ViberApi
     var authToken = System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN");
