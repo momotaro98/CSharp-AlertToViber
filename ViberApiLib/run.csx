@@ -12,7 +12,11 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     log.Info(data?.GetType().ToString());
 
     // Test ViberApi
-    Api viber = new Api(System.Environment.GetEnvironmentVariable("TEST_VIBER_AUTH_TOKEN"), "momotaroBot", "");
+    var authToken = System.Environment.GetEnvironmentVariable("TEST_VIBER_AUTH_TOKEN");
+    if (authToken == null) log.Info("Environment Variable, TEST_VIBER_AUTH_TOKEN, is not set.");
+    var botName = System.Environment.GetEnvironmentVariable("TEST_BOT_NAME") ?? "";
+    var botAvatar = System.Environment.GetEnvironmentVariable("TEST_BOT_AVATAR_URI") ?? "";
+    Api viber = new Api(authToken, botName, botAvatar);
 
     // Test SendMessages
     var result = viber.SendMessages(userId: "nie7s9b4vcXqc/yfbyJyGw==", text: "Test Api.SendMessages method"); // TODO: Replace

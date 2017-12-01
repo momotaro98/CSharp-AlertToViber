@@ -17,8 +17,12 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IColle
     dynamic data = await req.Content.ReadAsAsync<object>();
 
     // Use ViberApi
-    Api viber = new Api(System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN"), "momotaroBot", "");
-    
+    var authToken = System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN");
+    if (authToken == null) log.Info("Environment Variable, VIBER_AUTH_TOKEN, is not set.");
+    var botName = System.Environment.GetEnvironmentVariable("BOT_NAME") ?? "";
+    var botAvatar = System.Environment.GetEnvironmentVariable("BOT_AVATAR_URI") ?? "";
+    Api viber = new Api(authToken, botName, botAvatar);
+        
     // Parse request
     var viberRequest = viber.ParseRequest(data.ToString());
 

@@ -17,10 +17,14 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
     string result = data?.result.ToString();
 
     // Use ViberApi
-    Api viber = new Api(System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN"), "momotaroBot", "");
+    var authToken = System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN");
+    if (authToken == null) log.Info("Environment Variable, VIBER_AUTH_TOKEN, is not set.");
+    var botName = System.Environment.GetEnvironmentVariable("BOT_NAME") ?? "";
+    var botAvatar = System.Environment.GetEnvironmentVariable("BOT_AVATAR_URI") ?? "";
+    Api viber = new Api(authToken, botName, botAvatar);
 
     // Send Alert to Subscribers
-    string viberAlertBotName = System.Environment.GetEnvironmentVariable("BOTUSER_TABLE_PARTITIONKEY_VALUE");
+    var viberAlertBotName = System.Environment.GetEnvironmentVariable("BOTUSER_TABLE_PARTITIONKEY_VALUE") ?? "";
     foreach (BotUser user in tableBinding.Where(u => u.PartitionKey == viberAlertBotName).ToList())
     {
         log.Info($"Send to {user.UserName}, UserId: {user.UserId}");
