@@ -16,6 +16,10 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IColle
     // Get request body
     dynamic data = await req.Content.ReadAsAsync<object>();
 
+    // Log Viber callback post body
+    log.Info("Viber callback post body: ");
+    log.Info(data?.ToString());
+
     // Use ViberApi
     var authToken = System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN");
     if (authToken == null) log.Info("Environment Variable, VIBER_AUTH_TOKEN, is not set.");
@@ -25,6 +29,9 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IColle
         
     // Parse request
     var viberRequest = viber.ParseRequest(data.ToString());
+
+    // Log request function got
+    log.Info($"Viber callback event type: {viberRequest.Event}");
 
     if (viberRequest is SubscribedRequest)
     {
