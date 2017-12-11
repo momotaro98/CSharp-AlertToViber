@@ -59,6 +59,9 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IColle
                 UserId = userId,
                 UserName = userName }
             );
+                    
+        // Send welcome message to new subscriber
+        viber.SendMessages(userId: userId, text: "Hi, " + userName + "\nWelcome!");
     }
     else if (viberRequest is UnsubscribedRequest)
     {
