@@ -40,9 +40,9 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
     log.Info($"name_of_report: {nameOfReport}");
 
     // Create alert message to Viber
-    var messageAlertName = string.Format("Alert Name: {0}\n", nameOfReport);
-    var messageQueryString = string.Format("Splunk Query String: {0}", queryString);
-    var alertMessageToViber = "Alert occurred\n\n" + messageAlertName + messageQueryString;
+    var messageAlertName = string.Format("[Alert Name] {0}", nameOfReport);
+    var messageQueryString = string.Format("[Splunk Query] {0}", queryString);
+    var alertMessageToViber = "Alert occurred\n" + "\n" + messageAlertName + "\n" + messageQueryString;
 
     // Send Alert to Subscribers
     var viberAlertBotName = System.Environment.GetEnvironmentVariable("BOTUSER_TABLE_PARTITIONKEY_VALUE") ?? "";
