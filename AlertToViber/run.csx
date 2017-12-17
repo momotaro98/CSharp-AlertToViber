@@ -9,21 +9,24 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
 {
     log.Info("C# HTTP trigger function processed a request.");
 
-    // Validate that reqeust is from script on Splunk
-    // [Caution] If we can use Webhook from Splunk, this validation should be removed.
-    if (!req.Headers.Contains("X-Script-On-Splunk"))
+    // Validate if the request is from SendGrid
+    if (!req.Headers.Contains("X-WAWS-Unencoded-URL"))
     {
-        log.Info("Got an incorrect request, which doesn't have X-Script-On-Splunk header");
+        log.Info("Got an incorrect request, which doesn't have X-WAWS-Unencoded-URL header");
         return req.CreateResponse(HttpStatusCode.BadRequest, "Incorrect request");
     }
 
     // Get request body
-    dynamic data = await req.Content.ReadAsAsync<object>();
-    if (data?.ToString() == null) return req.CreateResponse(HttpStatusCode.BadRequest, "Incorrect request");
-    string dataStr = data?.ToString();
-    // Log request data
-    log.Info("Request body");
-    log.Info(dataStr);
+    var provider = new MultipartMemoryStreamProvider();
+    await req.Content.ReadAsMultipartAsync(provider);
+    if (provider?.ToString() == null) return req.CreateResponse(HttpStatusCode.BadRequest, "Incorrect request");
+
+    // Parse Email from SendGrid
+    log.Info("Parsing Email from SendGrid");
+    var Subject = provider.Contents[SendGridConstants.SubjectIndex].ReadAsStringAsync().Result;
+    log.Info($"Email Subject: {Subject.ToString()}");
+    var Body = provider.Contents[SendGridConstants.BodyIndex].ReadAsStringAsync().Result;
+    log.Info($"Email Body: {Body.ToString()}");
 
     // Use ViberApi
     var authToken = System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN");
@@ -32,17 +35,10 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
     var botAvatar = System.Environment.GetEnvironmentVariable("BOT_AVATAR_URI") ?? "";
     Api viber = new Api(authToken, botName, botAvatar);
 
-    // Get Splunk data
-    // http://docs.splunk.com/Documentation/Splunk/6.6.3/Alert/Configuringscriptedalerts#Access_arguments_to_scripts_that_are_run_as_an_alert_action
-    var queryString = data?.SPLUNK_ARG_3.ToString();
-    log.Info($"fully_qualified_query_string: {queryString}");
-    var nameOfReport = data?.SPLUNK_ARG_4.ToString();
-    log.Info($"name_of_report: {nameOfReport}");
-
     // Create alert message to Viber
-    var messageAlertName = string.Format("[Alert Name] {0}", nameOfReport);
-    var messageQueryString = string.Format("[Splunk Query] {0}", queryString);
-    var alertMessageToViber = "Alert occurred\n" + "\n" + messageAlertName + "\n" + messageQueryString;
+    var messageSubject = string.Format("[Email Subject] {0}", Subject);
+    var messageBody = string.Format("[Email Body] {0}", Body);
+    var alertMessageToViber = "Alert occurred\n" + "\n" + messageSubject + "\n" + messageBody;
 
     // Send Alert to Subscribers
     var viberAlertBotName = System.Environment.GetEnvironmentVariable("BOTUSER_TABLE_PARTITIONKEY_VALUE") ?? "";
@@ -53,11 +49,17 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
         log.Info(result_SendMessages);
     }
 
-    return req.CreateResponse(HttpStatusCode.OK, "Splunk post data: \n" + dataStr);
+    return req.CreateResponse(HttpStatusCode.OK);
 }
 
 public class BotUser : TableEntity
 {
     public string UserId { get; set; }
     public string UserName { get; set; }
+}
+
+static class SendGridConstants
+{
+    public static readonly int SubjectIndex = 9;
+    public static readonly int BodyIndex = 5;
 }
