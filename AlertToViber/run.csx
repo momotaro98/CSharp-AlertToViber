@@ -3,6 +3,7 @@
 #r "Microsoft.WindowsAzure.Storage"
 
 using System.Net;
+using System.Text.RegularExpressions;
 using Microsoft.WindowsAzure.Storage.Table;
 
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQueryable<BotUser> tableBinding, TraceWriter log)
@@ -21,12 +22,32 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
     await req.Content.ReadAsMultipartAsync(provider);
     if (provider?.ToString() == null) return req.CreateResponse(HttpStatusCode.BadRequest, "Incorrect request");
 
-    // Parse Email from SendGrid
-    log.Info("Parsing Email from SendGrid");
-    var Subject = provider.Contents[SendGridConstants.SubjectIndex].ReadAsStringAsync().Result;
-    log.Info($"Email Subject: {Subject.ToString()}");
-    var Body = provider.Contents[SendGridConstants.BodyIndex].ReadAsStringAsync().Result;
-    log.Info($"Email Body: {Body.ToString()}");
+    string subject = null;
+    
+    // string pattern = @"Subject.";  // --- OK
+    // string pattern = @"Subject.*"; // --- OK
+    // string pattern = @"Subject.*$"; // --- NG
+    string pattern = @"(?<=Subject:\s).*"; // To get alert email subject
+    
+    log.Info("Logging HttpContents from SendGrid");
+    foreach (var cntnt in provider.Contents)
+    {
+        /* provider.Contents from SendGrid contains HttpContent that has "Subject: subject..." */
+
+        // Get Content from SendGrid
+        var item = await cntnt.ReadAsStringAsync();
+        log.Info(item.ToString());
+        
+        // Get alert email subject
+        Match matchedObject = Regex.Match(item.ToString(), pattern);
+        string matchedString = matchedObject?.Value.ToString();
+        if (matchedString != null && matchedString != string.Empty)
+        {
+            subject = matchedString;
+        }
+    }
+
+    log.Info($"Alert email subject obtained : {subject?.ToString()}");
 
     // Use ViberApi
     var authToken = System.Environment.GetEnvironmentVariable("VIBER_AUTH_TOKEN");
@@ -36,9 +57,9 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
     Api viber = new Api(authToken, botName, botAvatar);
 
     // Create alert message to Viber
-    var messageSubject = string.Format("[Email Subject] {0}", Subject);
-    var messageBody = string.Format("[Email Body] {0}", Body);
-    var alertMessageToViber = "Alert occurred\n" + "\n" + messageSubject + "\n" + messageBody;
+    var messageSubject = string.Format("[Email Subject] {0}", subject?.ToString());
+    var alertMessageToViber = "Alert occurred\n" + "\n" + messageSubject;
+    log.Info($"Alert Message to Viber: {alertMessageToViber.ToString()}");
 
     // Send Alert to Subscribers
     var viberAlertBotName = System.Environment.GetEnvironmentVariable("BOTUSER_TABLE_PARTITIONKEY_VALUE") ?? "";
@@ -56,10 +77,4 @@ public class BotUser : TableEntity
 {
     public string UserId { get; set; }
     public string UserName { get; set; }
-}
-
-static class SendGridConstants
-{
-    public static readonly int SubjectIndex = 9;
-    public static readonly int BodyIndex = 5;
 }
