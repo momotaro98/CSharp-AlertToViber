@@ -1,0 +1,25 @@
+{
+    "bindings": [
+      {
+        "name": "myTimer",
+        "type": "timerTrigger",
+        "direction": "in",
+        "schedule": "0 */30 * * * *"
+      },
+      {
+        "type": "table",
+        "name": "inputTable",
+        "tableName": "BotUser",
+        "connection": "AzureWebJobsDashboard",
+        "direction": "in"
+      },
+      {
+        "type": "table",
+        "name": "outputTable",
+        "tableName": "BotUser",
+        "connection": "AzureWebJobsDashboard",
+        "direction": "out"
+      }
+    ],
+    "disabled": false
+  }
