@@ -3,6 +3,7 @@
 #r "Microsoft.WindowsAzure.Storage"
 
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.WindowsAzure.Storage.Table;
 
@@ -41,8 +42,16 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
         // Get alert email subject
         Match matchedObject = Regex.Match(item.ToString(), pattern);
         string matchedString = matchedObject?.Value.ToString();
+
+        // Check if the matched string is empty
         if (matchedString != null && matchedString != string.Empty)
         {
+            // Parse and Decode and Join if the string type is UTF-8
+            if (matchedString.StartsWith("=?utf-8?B?") || matchedString.StartsWith("=?UTF-8?B?"))
+            {
+                matchedString = ParseAndDecodeAndJoinUTF8String(matchedString);
+            }
+            // Set subject
             subject = matchedString;
         }
     }
@@ -77,4 +86,33 @@ public class BotUser : TableEntity
 {
     public string UserId { get; set; }
     public string UserName { get; set; }
+}
+
+public static string ParseAndDecodeAndJoinUTF8String(string str)
+{
+    /*
+        [CASE 1]
+        input: "=?utf-8?B?Lm1zLmpwLmxvY2FsIOOBp+aknOWHuuOBleOCjOOBvuOBl+OBnw==?="
+        return: "高リスクの侵入が WRSLOMS101Z"
+
+        [CASE 2]
+        input: "=?utf-8?B?6auY44Oq44K544Kv44Gu5L615YWl44GMIFdSU0xPTVMxMDFa?= =?utf-8?B?Lm1zLmpwLmxvY2FsIOOBp+aknOWHuuOBleOCjOOBvuOBl+OBnw==?="
+        return: "高リスクの侵入が WRSLOMS101Z.ms.jp.local で検出されました" 
+    */
+    
+    // Parse with "?"
+    Char delimiter = '?';
+    String[] substrings = str.Split(delimiter);
+    string joinedText = string.Empty;
+    int n = substrings.Length / 4;
+    for (int i = 0; i < n; i++)
+    {
+        // Decode Base64
+        var bytes = Convert.FromBase64String(substrings[4*i + 3]);
+        // Decode UTF-8
+        var text = Encoding.UTF8.GetString(bytes);
+        // Join
+        joinedText += text;
+    }
+    return joinedText;
 }
