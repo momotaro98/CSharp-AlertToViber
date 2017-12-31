@@ -47,10 +47,10 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
         if (matchedString != null && matchedString != string.Empty)
         {
             // Parse and Decode and Join if the string type is UTF-8
-            if (matchedString.StartsWith("=?utf-8?B?") || matchedString.StartsWith("=?UTF-8?B?"))
+            if (matchedString.StartsWith("=?"))
             {
-                log.Info("Subject of this incoming email contains UTF-8 chars");
-                matchedString = ParseAndDecodeAndJoinUTF8String(matchedString);
+                log.Info("String encoding of subject of this incoming email might be not ascii");
+                matchedString = ParseAndDecodeAndJoin(matchedString);
             }
 
             // Set subject of email
@@ -102,7 +102,7 @@ public class BotUser : TableEntity
     public string UserName { get; set; }
 }
 
-public static string ParseAndDecodeAndJoinUTF8String(string str)
+public static string ParseAndDecodeAndJoin(string str)
 {
     /*
         [CASE 1]
@@ -112,8 +112,19 @@ public static string ParseAndDecodeAndJoinUTF8String(string str)
         [CASE 2]
         input: "=?utf-8?B?6auY44Oq44K544Kv44Gu5L615YWl44GMIFdSU0xPTVMxMDFa?= =?utf-8?B?Lm1zLmpwLmxvY2FsIOOBp+aknOWHuuOBleOCjOOBvuOBl+OBnw==?="
         return: "高リスクの侵入が WRSLOMS101Z.ms.jp.local で検出されました" 
+
+        [CASE 3]
+        input: "=?iso-2022-jp?B?GyRCJEskWyRzJDQkQCQxGyhC?="
+        return: "にほんごだけ"
     */
-    
+
+    // Return arg string itself if the encoding is not targeted
+    if (!str.StartsWith("=?utf-8?B?") && !str.StartsWith("=?UTF-8?B?")
+        && !str.StartsWith("=?iso-2022-jp?B?") && !str.StartsWith("=?ISO-2022-JP?B?"))
+    {
+        return str;
+    }
+
     // Parse with "?"
     Char delimiter = '?';
     String[] substrings = str.Split(delimiter);
@@ -123,8 +134,25 @@ public static string ParseAndDecodeAndJoinUTF8String(string str)
     {
         // Decode Base64
         var bytes = Convert.FromBase64String(substrings[4*i + 3]);
-        // Decode UTF-8
-        var text = Encoding.UTF8.GetString(bytes);
+
+        // String to join
+        string text = string.Empty;
+        // Decode according to encoding
+        switch (substrings[4*i + 1])
+        {
+        case "UTF-8":
+        case "utf-8":
+            text = Encoding.UTF8.GetString(bytes);
+            break;
+        case "ISO-2022-JP":
+        case "iso-2022-jp":
+            text = Encoding.GetEncoding("iso-2022-jp").GetString(bytes);
+            break;
+        default:
+            text = str;
+            break;
+        }
+
         // Join
         joinedText += text;
     }
