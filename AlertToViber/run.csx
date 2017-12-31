@@ -49,10 +49,24 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
             // Parse and Decode and Join if the string type is UTF-8
             if (matchedString.StartsWith("=?utf-8?B?") || matchedString.StartsWith("=?UTF-8?B?"))
             {
+                log.Info("Subject of this incoming email contains UTF-8 chars");
                 matchedString = ParseAndDecodeAndJoinUTF8String(matchedString);
             }
-            // Set subject
-            subject = matchedString;
+
+            // Set subject of email
+            if (string.IsNullOrEmpty(subject))
+            {
+                subject = matchedString;
+            }
+            else
+            {
+                log.Info($"current extracted subject: {subject?.ToString()}");
+                
+                if (matchedString.StartsWith("Re:") || matchedString.StartsWith("RE:"))
+                {
+                    subject = matchedString;
+                }
+            }
         }
     }
 
