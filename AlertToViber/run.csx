@@ -4,6 +4,7 @@
 
 using System.Net;
 using System.Text;
+using System.Net.Mail;
 using System.Text.RegularExpressions;
 using Microsoft.WindowsAzure.Storage.Table;
 
@@ -105,56 +106,87 @@ public class BotUser : TableEntity
 public static string ParseAndDecodeAndJoin(string str)
 {
     /*
-        [CASE 1]
-        input: "=?utf-8?B?Lm1zLmpwLmxvY2FsIOOBp+aknOWHuuOBleOCjOOBvuOBl+OBnw==?="
-        return: "高リスクの侵入が WRSLOMS101Z"
+    [CASE 1]
+    input: "=?utf-8?B?Lm1zLmpwLmxvY2FsIOOBp+aknOWHuuOBleOCjOOBvuOBl+OBnw==?="
+    return: "高リスクの侵入が WRSLOMS101Z"
 
-        [CASE 2]
-        input: "=?utf-8?B?6auY44Oq44K544Kv44Gu5L615YWl44GMIFdSU0xPTVMxMDFa?= =?utf-8?B?Lm1zLmpwLmxvY2FsIOOBp+aknOWHuuOBleOCjOOBvuOBl+OBnw==?="
-        return: "高リスクの侵入が WRSLOMS101Z.ms.jp.local で検出されました" 
+    [CASE 2]
+    input: "=?utf-8?B?6auY44Oq44K544Kv44Gu5L615YWl44GMIFdSU0xPTVMxMDFa?= =?utf-8?B?Lm1zLmpwLmxvY2FsIOOBp+aknOWHuuOBleOCjOOBvuOBl+OBnw==?="
+    return: "高リスクの侵入が WRSLOMS101Z.ms.jp.local で検出されました" 
 
-        [CASE 3]
-        input: "=?iso-2022-jp?B?GyRCJEskWyRzJDQkQCQxGyhC?="
-        return: "にほんごだけ"
+    [CASE 3]
+    input: "=?iso-2022-jp?B?GyRCJEskWyRzJDQkQCQxGyhC?="
+    return: "にほんごだけ"
+
+    [CASE 4]
+    input: "=?utf-8?B?UkU6IOOAkOaxoOeUsOi/lOS/oeODoeODvOODqyDjg4bjgrnjg4jjgJFCdWc6?= =?utf-8?B?MTY1ODcgd2FzIGFkZGVkIC0gUkZDX0dXX0lOVEVHUkFUSU9OIHJlc3VsdFNl?= =?utf-8?Q?archShipments__(DO_NOT_EDIT_THIS:16587)?=";
+    return: "RE: 【池田返信メール テスト】Bug:16587 was added - RFC_GW_INTEGRATION resultSearchShipments__(DO_NOT_EDIT_THIS:16587)"
     */
 
     // Return arg string itself if the encoding is not targeted
     if (!str.StartsWith("=?utf-8?B?") && !str.StartsWith("=?UTF-8?B?")
-        && !str.StartsWith("=?iso-2022-jp?B?") && !str.StartsWith("=?ISO-2022-JP?B?"))
+        && !str.StartsWith("=?utf-8?Q?") && !str.StartsWith("=?UTF-8?Q?")
+        && !str.StartsWith("=?iso-2022-jp?B?") && !str.StartsWith("=?ISO-2022-JP?B?")
+        && !str.StartsWith("=?iso-2022-jp?Q?") && !str.StartsWith("=?ISO-2022-JP?Q?"))
     {
         return str;
     }
 
-    // Parse with "?"
+    // Parse "?"
     Char delimiter = '?';
     String[] substrings = str.Split(delimiter);
     string joinedText = string.Empty;
     int n = substrings.Length / 4;
     for (int i = 0; i < n; i++)
     {
-        // Decode Base64
-        var bytes = Convert.FromBase64String(substrings[4*i + 3]);
+        // Parse raw string
+        var encoding = substrings[4*i+1];
+        var emailEncoding = substrings[4*i+2];
+        var target = substrings[4*i+3];
 
-        // String to join
-        string text = string.Empty;
-        // Decode according to encoding
-        switch (substrings[4*i + 1])
+        // Decode and Join
+        switch(emailEncoding)
         {
-        case "UTF-8":
-        case "utf-8":
-            text = Encoding.UTF8.GetString(bytes);
+        case "B":
+            joinedText += DecodeWithBase64(encoding, target);
             break;
-        case "ISO-2022-JP":
-        case "iso-2022-jp":
-            text = Encoding.GetEncoding("iso-2022-jp").GetString(bytes);
+        case "Q":
+            joinedText += DecodeWithQuotedPrintable(encoding, target);
             break;
         default:
-            text = str;
             break;
         }
-
-        // Join
-        joinedText += text;
     }
     return joinedText;
+}
+	
+public static string DecodeWithBase64(string encoding, string target)
+{
+    var bytes = Convert.FromBase64String(target);
+
+    // String to return
+    string text = string.Empty;
+    // Decode
+    switch (encoding)
+    {
+    case "UTF-8":
+    case "utf-8":
+        text = Encoding.UTF8.GetString(bytes);
+        break;
+    case "ISO-2022-JP":
+    case "iso-2022-jp":
+        text = Encoding.GetEncoding("iso-2022-jp").GetString(bytes);
+        break;
+    default:
+        text = target;
+        break;
+    }
+
+    return text;
+}
+	
+public static string DecodeWithQuotedPrintable(string encoding, string target)
+{
+    Attachment attachment = Attachment.CreateAttachmentFromString("", target);
+    return attachment.Name;
 }
